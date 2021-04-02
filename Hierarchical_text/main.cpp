@@ -30,7 +30,7 @@ void main()
 	TTextLink::PrintFree(text);
 	for (text.Reset(); !text.IsEmpty(); text.GoNext())
 	{
-		if (text.GetCurr()->str[0] == str[0] && text.GetCurr()->str[1] == str[1] && text.GetCurr()->str[3] == str[3])
+		if (!strcmp(text.GetCurr()->str, str))
 		{
 			text.InsDownLine("new_line");
 			break;
@@ -45,7 +45,7 @@ void main()
 	TTextLink::PrintFree(text);
 	for (text.Reset(); !text.IsEmpty(); text.GoNext())
 	{
-		if (text.GetCurr()->str[0] == str[0] && text.GetCurr()->str[1] == str[1] && text.GetCurr()->str[3] == str[3])
+		if (!strcmp(text.GetCurr()->str, str))
 		{
 			text.DelNextLine();
 			break;
