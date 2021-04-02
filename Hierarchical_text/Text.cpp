@@ -1,6 +1,8 @@
 #include "Text.h"
 TTextLink::TTextLink(const char* s, TTextLink* next, TTextLink* down)
 {
+	flag = true;
+	pNextMemory = NULL;
 	pNext = next;
 	pDown = down;
 	if (s != NULL)
@@ -16,12 +18,99 @@ TTextLink::TTextLink(const char* s, TTextLink* next, TTextLink* down)
 		str[0] = '\0';
 	}
 }
+void TTextLink::InitMem(int s)
+{
+	int size = sizeof(TTextLink) * s;
+	mem.pFirst = mem.pFree = (TTextLink*)malloc(size);
+	mem.pLast = mem.pFirst + (s - 1);
+	TTextLink* tmp = mem.pFirst;
+	while (tmp != mem.pLast)
+	{
+		tmp->pNextMemory = tmp + 1;
+		tmp->flag = true;
+		tmp->str[0] = '\0';
+		tmp = tmp->pNextMemory;
+	} 
+	tmp->pNextMemory = NULL;
+	tmp->flag = true;
+	tmp->str[0] = '\0';
+}
+void TTextLink::clean(TText& t)
+{
+	TTextLink* tmp = mem.pFirst;
+	while (tmp != mem.pLast)
+	{
+		tmp->flag = true;
+		tmp = tmp + 1;
+	}
+	tmp->flag = true;
+	tmp=mem.pFree;
+	while (tmp != mem.pLast)
+	{
+		tmp->flag = false;
+		tmp = tmp->pNextMemory;
+	}
+	tmp->flag = false;
+	for (t.Reset(); !t.IsEmpty(); t.GoNext())
+	{
+		t.GetCurr()->flag = false;
+	}
+	tmp = mem.pFirst;
+	if (tmp->flag)
+		TText::operator delete(tmp);
+	TTextLink* prev = tmp;
+	tmp = tmp + 1;
+	while (tmp != mem.pLast)
+	{
+		TTextLink* next = tmp->pNextMemory;
+		if (!tmp->flag)
+		{
+			prev->pNextMemory = tmp;
+			prev = tmp;
+		}
+		else
+			TText::operator delete(tmp);
+		tmp = next;
+	}
+	if (!tmp->flag)
+	{
+		prev->pNextMemory = tmp;
+		prev = tmp;
+	}
+	else
+		TText::operator delete(tmp);
+}
+void TTextLink::PrintFree(TText& t)
+{
+	TTextLink* tmp = mem.pFirst;
+	while (tmp != mem.pLast)
+	{
+		tmp->flag = true;
+		tmp = tmp + 1;
+	}
+	tmp->flag = true;
+	for (t.Reset(); !t.IsEmpty(); t.GoNext())
+	{
+		t.GetCurr()->flag = false;
+	}
+ 	tmp = mem.pFirst;
+	while (tmp != mem.pLast)
+	{
+		if (tmp->flag)
+			if (tmp->str[0] != '\0')
+				std::cout << tmp->str << ' ';
+		tmp = tmp->pNextMemory;
+	}
+	if (tmp->flag)
+		if (tmp->str[0] != '\0')
+			std::cout << tmp->str << ' ';
+}
 TText::TText()
 {
 	pFirst = NULL;
 	pCurr = NULL;
 }
-TText::TText(const TText& t)
+/*TText::TText(const TText& t)
 {
 	if (t.pFirst == NULL)
 	{
@@ -68,7 +157,7 @@ TText::TText(const TText& t)
 		}
 		pCurr = pFirst;
 	}
-}
+}*/
 void TText::GoFirstLink()
 {
 	while (!st.empty())
@@ -103,7 +192,10 @@ void TText::InsNextLine(const char* s)
 {
 	if (pCurr)
 	{
-		TTextLink* t = new TTextLink(s, pCurr->pNext, NULL);
+		TTextLink* t = (TTextLink*)(TText::operator new(1)); 
+		strcpy_s(t->str, s);
+		t->pNext = pCurr->pNext;
+		t->pDown = NULL;
 		pCurr->pNext = t;
 	}
 }
@@ -111,7 +203,10 @@ void TText::InsNextSections(const char* s)
 {
 	if (pCurr)
 	{
-		TTextLink* t = new TTextLink(s, NULL, pCurr->pNext);
+		TTextLink* t = (TTextLink*)(TText::operator new(1)); 
+		strcpy_s(t->str, s);
+		t->pNext = NULL;
+		t->pDown = pCurr->pNext;
 		pCurr->pNext = t;
 	}
 }
@@ -119,7 +214,10 @@ void TText::InsDownLine(const char* s)
 {
 	if (pCurr)
 	{
-		TTextLink* t = new TTextLink(s, pCurr->pDown, NULL);
+		TTextLink* t = (TTextLink*)(TText::operator new(1)); 
+	    strcpy_s(t->str, s);
+		t->pNext = pCurr->pDown;
+		t->pDown = NULL;
 		pCurr->pDown = t;
 	}
 }
@@ -127,7 +225,10 @@ void TText::InsDownSections(const char* s)
 {
 	if (pCurr)
 	{
-		TTextLink* t = new TTextLink(s, NULL, pCurr->pDown);
+		TTextLink* t = (TTextLink*)(TText::operator new(1));
+		strcpy_s(t->str, s);
+		t->pDown = pCurr->pDown;
+		t->pNext = NULL;
 		pCurr->pDown = t;
 	}
 }
@@ -137,7 +238,7 @@ void TText::DelNextLine()
 	{
 		TTextLink* t = pCurr->pNext;
 		pCurr->pNext = t->pNext;
-		delete t;
+		//TText::operator delete(t);
 	}
 }
 void TText::DelDownLine()
@@ -146,7 +247,7 @@ void TText::DelDownLine()
 	{
 		TTextLink* t = pCurr->pDown;
 		pCurr->pDown = t->pNext;
-		delete t;
+		//TText::operator delete(t);
 	}
 }
 
@@ -214,13 +315,19 @@ TTextLink* TText::ReadRec(std::ifstream& ifs)
 		{
 			if (!pC)
 			{
-				TTextLink* t = new TTextLink(buff);
+				TTextLink* t = (TTextLink*)(TText::operator new(1));
+				strcpy_s(t->str, buff);
+				t->pDown = NULL;
+				t->pNext= NULL;
 				pF = t;
-				pC = t;
+				pC = pF;
 			}
 			else
 			{
-				TTextLink* t = new TTextLink(buff);
+				TTextLink* t = (TTextLink*)(TText::operator new(1));
+				strcpy_s(t->str, buff);
+				t->pDown = NULL;
+				t->pNext = NULL;
 				pC->pNext = t;
 				pC = t;
 			}
@@ -330,7 +437,10 @@ void TText::ReadS(const char* name_file)
 	{
 		char buff[MAX_SIZE];
 		ifs.getline(buff, MAX_SIZE, '\n');
-		TTextLink* curr = new TTextLink(buff);
+		TTextLink* curr = (TTextLink*)(TText::operator new(1));
+		strcpy_s(curr->str, buff);
+		curr->pDown = NULL;
+		curr->pNext = NULL;
 		pFirst = curr;
 		pCurr = curr;
 		std::stack<TTextLink*> prev_down;
@@ -340,7 +450,10 @@ void TText::ReadS(const char* name_file)
 			ifs.getline(buff, MAX_SIZE, '\n');
 			if (buff[0] != '{' && buff[0] != '}')
 			{
-				TTextLink* t = new TTextLink(buff);
+				TTextLink* t = (TTextLink*)(TText::operator new(1));
+				strcpy_s(t->str, buff);
+				t->pNext = NULL;
+				t->pDown = NULL;
 				if (prev_simb == '{')
 					curr->pDown = t;
 				else
@@ -365,4 +478,50 @@ void TText::ReadS(const char* name_file)
 		}
 		ifs.close();
 	}
+}
+void TText::Reset()
+{
+	if (pFirst)
+	{
+		while (!st.empty())
+			st.pop();
+		pCurr = pFirst;
+		st.push(pFirst);
+		if (pFirst->pNext)
+			st.push(pFirst->pNext);
+		if (pFirst->pDown)
+			st.push(pFirst->pDown);
+	}
+}
+void TText::GoNext()
+{
+	if (!st.empty())
+	{
+		pCurr = st.top();
+		st.pop();
+		if (pCurr != pFirst)
+		{
+			if (pCurr->pDown)
+				st.push(pCurr->pDown);
+			if (pCurr->pNext)
+				st.push(pCurr->pNext);
+		}
+	}
+}
+bool TText::IsEmpty()
+{
+	return st.empty();
+}
+void* TText::operator new(std::size_t n)
+{
+	TTextLink* pC = mem.pFree;
+	if (mem.pFree)
+		mem.pFree = mem.pFree->pNextMemory;
+	return pC;
+}
+void TText:: operator delete(void* memory)
+{
+	TTextLink* pC = (TTextLink*)memory;
+	pC->pNextMemory = mem.pFree;
+	mem.pFree = pC;
 }

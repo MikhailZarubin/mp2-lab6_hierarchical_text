@@ -1,13 +1,4 @@
 aaa
-bbb
-{
-ccc
-{
-ddd
-iii
-}
-jjj
-}
 alpha
 {
 gamm

@@ -7,14 +7,31 @@
 #include<set>
 
 const int MAX_SIZE = 80;
+const int MaxMemorySize = 100;
+
+struct  TTextLink;
+class TText;
+struct  TMem
+{
+	TTextLink* pFirst, * pFree, * pLast;
+};
 
 struct TTextLink {
+	TTextLink* pNextMemory;
 	TTextLink* pNext;
 	TTextLink* pDown;
 	char str[MAX_SIZE];
+	bool flag;
+	static TMem mem;
+	static void InitMem(int size = MaxMemorySize);
+	static void clean(TText& t);
+	static void PrintFree(TText& t);
+	//конструктор
 	TTextLink(const char* s = NULL, TTextLink* next = NULL, TTextLink* down = NULL);
 };
-class TText {
+
+class TText: private TTextLink
+{
 	TTextLink* pFirst;
 	TTextLink* pCurr;
 	std::stack<TTextLink*>st;
@@ -28,7 +45,7 @@ public:
 	//конструктор по умолчанию
 	TText();
 	//конструктор копирования
-	TText(const TText& t);
+	//TText(const TText& t);
 	//переместить указатель на текущий на первый элемент и очистить стек
 	void GoFirstLink();
 	//перейти к следующему элементу по иерархии после текущего
@@ -61,4 +78,12 @@ public:
 	void SaveS(const char* file_name);
 	//чтение из файла с помощью стека
 	void ReadS(const char* file_name);
+	//навигация по тексту 
+	void Reset();
+	void GoNext();
+	bool IsEmpty();
+	TTextLink* GetCurr() { return pCurr; }
+	//переопределение операторов работы с памятью
+	void* operator new(std::size_t n);
+	void operator delete (void* memory);
 };
