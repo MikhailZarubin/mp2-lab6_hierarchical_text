@@ -93,7 +93,7 @@ void TTextLink::PrintFree(TText& t)
 	{
 		t.GetCurr()->flag = false;
 	}
- 	tmp = mem.pFirst;
+	tmp = mem.pFirst;
 	while (tmp != mem.pLast)
 	{
 		if (tmp->flag)

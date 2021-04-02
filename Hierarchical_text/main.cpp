@@ -6,10 +6,16 @@ void main()
 	TText text;
 	text.Read("text.txt");
 	text.Print();
-	char str[MAX_SIZE] = "gamm";
+	std::cout << '\n';
+	std::cout << std::endl << "Free list : ";
+	TTextLink::PrintFree(text);
+	TTextLink::clean(text);
+	std::cout << std::endl << "New free list : " << std::endl;
+	TTextLink::PrintFree(text);
+	char str[] = "gamm";
 	for (text.Reset(); !text.IsEmpty(); text.GoNext())
 	{
-		if (text.GetCurr()->str[0] == str[0] && text.GetCurr()->str[1] == str[1] && text.GetCurr()->str[3] == str[3])
+		if (!strcmp(text.GetCurr()->str, str))
 		{
 			text.DelDownLine();
 			break;
