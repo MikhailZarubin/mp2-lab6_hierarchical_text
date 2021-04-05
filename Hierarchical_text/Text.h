@@ -17,7 +17,6 @@ struct  TMem
 };
 
 struct TTextLink {
-	TTextLink* pNextMemory;
 	TTextLink* pNext;
 	TTextLink* pDown;
 	char str[MAX_SIZE];
@@ -25,7 +24,7 @@ struct TTextLink {
 	static TMem mem;
 	static void InitMem(int size = MaxMemorySize);
 	static void clean(TText& t);
-	static void PrintFree(TText& t);
+	static void PrintFree();
 	//конструктор
 	TTextLink(const char* s = NULL, TTextLink* next = NULL, TTextLink* down = NULL);
 };

@@ -2,7 +2,6 @@
 TTextLink::TTextLink(const char* s, TTextLink* next, TTextLink* down)
 {
 	flag = true;
-	pNextMemory = NULL;
 	pNext = next;
 	pDown = down;
 	if (s != NULL)
@@ -26,69 +25,24 @@ void TTextLink::InitMem(int s)
 	TTextLink* tmp = mem.pFirst;
 	while (tmp != mem.pLast)
 	{
-		tmp->pNextMemory = tmp + 1;
+		tmp->pNext = tmp + 1;
 		tmp->flag = true;
 		tmp->str[0] = '\0';
-		tmp = tmp->pNextMemory;
+		tmp = tmp->pNext;
 	} 
-	tmp->pNextMemory = NULL;
+	tmp->pNext = NULL;
 	tmp->flag = true;
 	tmp->str[0] = '\0';
 }
 void TTextLink::clean(TText& t)
 {
-	TTextLink* tmp = mem.pFirst;
-	while (tmp != mem.pLast)
-	{
-		tmp->flag = true;
-		tmp = tmp + 1;
-	}
-	tmp->flag = true;
-	tmp=mem.pFree;
+	TTextLink* tmp = mem.pFree;
 	while (tmp != mem.pLast)
 	{
 		tmp->flag = false;
-		tmp = tmp->pNextMemory;
-	}
+		tmp = tmp->pNext;
+	} 
 	tmp->flag = false;
-	for (t.Reset(); !t.IsEmpty(); t.GoNext())
-	{
-		t.GetCurr()->flag = false;
-	}
-	tmp = mem.pFirst;
-	if (tmp->flag)
-		TText::operator delete(tmp);
-	TTextLink* prev = tmp;
-	tmp = tmp + 1;
-	while (tmp != mem.pLast)
-	{
-		TTextLink* next = tmp->pNextMemory;
-		if (!tmp->flag)
-		{
-			prev->pNextMemory = tmp;
-			prev = tmp;
-		}
-		else
-			TText::operator delete(tmp);
-		tmp = next;
-	}
-	if (!tmp->flag)
-	{
-		prev->pNextMemory = tmp;
-		prev = tmp;
-	}
-	else
-		TText::operator delete(tmp);
-}
-void TTextLink::PrintFree(TText& t)
-{
-	TTextLink* tmp = mem.pFirst;
-	while (tmp != mem.pLast)
-	{
-		tmp->flag = true;
-		tmp = tmp + 1;
-	}
-	tmp->flag = true;
 	for (t.Reset(); !t.IsEmpty(); t.GoNext())
 	{
 		t.GetCurr()->flag = false;
@@ -97,13 +51,31 @@ void TTextLink::PrintFree(TText& t)
 	while (tmp != mem.pLast)
 	{
 		if (tmp->flag)
-			if (tmp->str[0] != '\0')
-				std::cout << tmp->str << ' ';
-		tmp = tmp->pNextMemory;
+		{
+			TText::operator delete(tmp);
+		}
+		else
+			tmp->flag = true;
+		tmp = tmp + 1;
 	}
 	if (tmp->flag)
+	{
+		TText::operator delete(tmp);
+	}
+	else
+		tmp->flag = true;
+}
+void TTextLink::PrintFree()
+{
+	TTextLink* tmp = mem.pFree;
+	while (tmp != mem.pLast)
+	{
 		if (tmp->str[0] != '\0')
 			std::cout << tmp->str << ' ';
+		tmp = tmp->pNext;
+	}
+	if (tmp->str[0] != '\0')
+		std::cout << tmp->str << ' ';
 }
 TText::TText()
 {
@@ -238,7 +210,7 @@ void TText::DelNextLine()
 	{
 		TTextLink* t = pCurr->pNext;
 		pCurr->pNext = t->pNext;
-		//TText::operator delete(t);
+		TText::operator delete(t);
 	}
 }
 void TText::DelDownLine()
@@ -247,7 +219,7 @@ void TText::DelDownLine()
 	{
 		TTextLink* t = pCurr->pDown;
 		pCurr->pDown = t->pNext;
-		//TText::operator delete(t);
+		TText::operator delete(t);
 	}
 }
 
@@ -516,12 +488,12 @@ void* TText::operator new(std::size_t n)
 {
 	TTextLink* pC = mem.pFree;
 	if (mem.pFree)
-		mem.pFree = mem.pFree->pNextMemory;
+		mem.pFree = mem.pFree->pNext;
 	return pC;
 }
 void TText:: operator delete(void* memory)
 {
 	TTextLink* pC = (TTextLink*)memory;
-	pC->pNextMemory = mem.pFree;
+	pC->pNext = mem.pFree;
 	mem.pFree = pC;
 }

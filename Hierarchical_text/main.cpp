@@ -8,10 +8,11 @@ void main()
 	text.Print();
 	std::cout << '\n';
 	std::cout << std::endl << "Free list : ";
-	TTextLink::PrintFree(text);
+	TTextLink::PrintFree();
 	TTextLink::clean(text);
-	std::cout << std::endl << "New free list : " << std::endl;
-	TTextLink::PrintFree(text);
+	std::cout << std::endl << "New free list : ";
+	TTextLink::PrintFree();
+	std::cout << std::endl;
 	char str[] = "gamm";
 	for (text.Reset(); !text.IsEmpty(); text.GoNext())
 	{
@@ -24,10 +25,11 @@ void main()
 	std::cout << '\n';
 	text.Print();
 	std::cout << std::endl << "Free list : ";
-	TTextLink::PrintFree(text);
+	TTextLink::PrintFree();
 	TTextLink::clean(text);
-	std::cout << std::endl << "New free list : " << std::endl;
-	TTextLink::PrintFree(text);
+	std::cout << std::endl << "New free list : ";
+	TTextLink::PrintFree();
+	std::cout << std::endl;
 	for (text.Reset(); !text.IsEmpty(); text.GoNext())
 	{
 		if (!strcmp(text.GetCurr()->str, str))
@@ -39,10 +41,11 @@ void main()
 	std::cout << '\n';
 	text.Print();
 	std::cout << std::endl << "Free list : ";
-	TTextLink::PrintFree(text);
+	TTextLink::PrintFree();
 	TTextLink::clean(text);
-	std::cout << std::endl << "New free list : " << std::endl;
-	TTextLink::PrintFree(text);
+	std::cout << std::endl << "New free list : ";
+	TTextLink::PrintFree();
+	std::cout << std::endl;
 	for (text.Reset(); !text.IsEmpty(); text.GoNext())
 	{
 		if (!strcmp(text.GetCurr()->str, str))
@@ -54,9 +57,10 @@ void main()
 	std::cout << '\n';
 	text.Print();
 	std::cout << std::endl << "Free list : ";
-	TTextLink::PrintFree(text);
+	TTextLink::PrintFree();
 	TTextLink::clean(text);
 	std::cout << std::endl << "New free list : ";
-	TTextLink::PrintFree(text);
+	TTextLink::PrintFree();
+	std::cout << std::endl;
 	text.SaveS("read.txt");
 }
